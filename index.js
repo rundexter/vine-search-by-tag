@@ -1,3 +1,6 @@
+var _    = require( 'lodash' );
+var rest = require( 'restler' );
+
 module.exports = {
     /**
      * The main entry point for the Dexter module
@@ -6,8 +9,17 @@ module.exports = {
      * @param {AppData} dexter Container for all data used in this workflow.
      */
     run: function(step, dexter) {
-        var results = { foo: 'bar' };
-        //Call this.complete with the module's output.  If there's an error, call this.fail(message) instead.
-        this.complete(results);
+        var tag  = step.input( 'tag' ).first();
+        var url = 'https://api.vineapp.com/timelines/tags/' + tag;
+
+        var self = this;
+        rest.get( url ).on( 'complete', function( res ) {
+            if ( res instanceof Error ) {
+                return self.fail( res.message );
+            }
+
+            self.complete( { vines: res.data.records } );
+        } );
+
     }
 };
